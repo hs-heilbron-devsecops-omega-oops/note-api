@@ -1,6 +1,6 @@
 name: code_verification
-on: 
-  push: 
+on:
+  push:
     branches:
       - main
   pull_request:
@@ -26,3 +26,7 @@ jobs:
       - name: Run Tests
         run: |
           pytest
+
+      - name: Run tests in parallel with coverage
+        run: |
+          pytest -v --cov=note-api --cov-report=xml --cov-report=html -n auto
