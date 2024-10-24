@@ -1,5 +1,8 @@
-name: code_verification-test
+name: code_verification
 on:
+  push:
+    branches:
+      - main
 
   pull_request:
     branches:
