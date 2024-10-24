@@ -23,10 +23,6 @@ jobs:
           pip install -r requirements.txt
           pip install -r requirements-dev.txt
 
-      - name: Run Tests
-        run: |
-          pytest
-
       - name: Run tests in parallel with coverage
         run: |
-          pytest -v --cov=note-api --cov-report=xml --cov-report=html -n auto
+          pytest -v --cov=note_api --cov-report=xml --cov-report=html -n auto
