@@ -55,3 +55,9 @@ jobs:
 
       - name: Run Bandit to check for vulnerabilities
         run: bandit -r note_api/ -f json -o bandit_output.json
+
+      - name: Upload Bandit report
+        uses: actions/upload-artifact@v3
+        with:
+            name: bandit-report
+            path: bandit_output.json
