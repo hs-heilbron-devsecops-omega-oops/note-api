@@ -52,6 +52,7 @@ jobs:
             file: ./coverage.xml
             token: ${{ secrets.ffb57f95-70b2-4fcb-b7eb-3298eff31dff }}
 
+
       - name: Run Snyk to check for vulnerabilities
         uses: snyk/actions/python@master
         with:
