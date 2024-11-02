@@ -25,7 +25,8 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install -r requirements-dev.txt
-          pip install pylint black
+          pip install pylint black bandit
+
 
       - name: Run tests in parallel with coverage
         run: |
@@ -52,10 +53,5 @@ jobs:
             file: ./coverage.xml
             token: ${{ secrets.ffb57f95-70b2-4fcb-b7eb-3298eff31dff }}
 
-
-      - name: Run Snyk to check for vulnerabilities
-        uses: snyk/actions/python@master
-        with:
-         args: test
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      - name: Run Bandit to check for vulnerabilities
+        run: bandit -r note_api/ -f json -o bandit_output.json
