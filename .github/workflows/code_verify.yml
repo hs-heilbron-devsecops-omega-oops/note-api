@@ -30,9 +30,11 @@ jobs:
       - name: Run tests in parallel with coverage
         run: |
           pytest -v --cov=note_api --cov-report=xml --cov-report=html -n auto
-      - name: Run Pylint
-        run: |
-          pylint --exit-zero note_api/ tests/
+      - name: Run Pylint on note_api
+        run: pylint note_api/
+
+      - name: Run Pylint on tests
+        run: pylint tests/
 
       - name: Run Black Check
         run: |
