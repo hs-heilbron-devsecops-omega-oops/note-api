@@ -43,6 +43,7 @@ jobs:
       - name: Run Black
         run: |
           black  note_api/ tests/
+
       - name: Submit coverage to Codecov
         run: bash <(curl -s https://codecov.io/bash) -t ffb57f95-70b2-4fcb-b7eb-3298eff31dff
       - name: Upload coverage to Codecov
@@ -50,6 +51,7 @@ jobs:
         with:
             file: ./coverage.xml
             token: ${{ secrets.ffb57f95-70b2-4fcb-b7eb-3298eff31dff }}
+
       - name: Run Snyk to check for vulnerabilities
         uses: snyk/actions/python@master
         with:
