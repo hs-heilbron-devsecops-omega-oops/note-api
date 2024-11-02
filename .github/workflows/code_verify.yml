@@ -36,9 +36,12 @@ jobs:
       - name: Run Pylint on tests
         run: pylint -E tests/
 
+
       - name: Run Black Check
         run: |
           black --check note_api/ tests/ || true
       - name: Run Black
         run: |
           black  note_api/ tests/
+      - name: Submit coverage to Codecov
+        run: bash <(curl -s https://codecov.io/bash) -t ffb57f95-70b2-4fcb-b7eb-3298eff31dff
