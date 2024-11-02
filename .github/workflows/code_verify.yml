@@ -31,8 +31,8 @@ jobs:
           pytest -v --cov=note_api --cov-report=xml --cov-report=html -n auto
       - name: Run Pylint
         run: |
-          pylint src/tests/
+          pylint .
 
       - name: Run Black Check
         run: |
-          black --check src/tests/
+          black --check .
