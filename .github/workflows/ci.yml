@@ -1,9 +1,5 @@
 name: code_verification
 on:
-  push:
-    branches:
-      - main
-
   pull_request:
     branches:
       - main
