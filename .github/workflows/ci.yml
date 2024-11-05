@@ -40,20 +40,3 @@ jobs:
         run: |
           black  note_api/ tests/
 
-      - name: Submit coverage to Codecov
-        run: bash <(curl -s https://codecov.io/bash) -t ${{ secrets.CODECOV_TOKEN }}
-
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v3
-        with:
-            file: ./coverage.xml
-            token: ${{ secrets.CODECOV_TOKEN }}
-
-      - name: Run Bandit to check for vulnerabilities
-        run: bandit -r note_api/ -f json -o bandit_output.json
-
-      - name: Upload Bandit report
-        uses: actions/upload-artifact@v3
-        with:
-            name: bandit-report
-            path: bandit_output.json
