@@ -28,7 +28,7 @@ jobs:
       - name: Build the Docker image
         run: |
           TIMESTAMP=$(date +"%Y-%m-%d")
-          RUN_NUMBER=$(( ${{ github.run_number }} % 1000 ))
+          RUN_NUMBER=$(( $GITHUB_RUN_NUMBER % 1000 ))
           IMAGE_NAME="ghcr.io/${{ github.repository }}:$TIMESTAMP-$RUN_NUMBER"
           docker build -t $IMAGE_NAME .
           echo "IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_ENV
