@@ -45,6 +45,16 @@ jobs:
       - name: Pull Docker Image
         run: docker pull ghcr.io/hs-heilbron-devsecops-omega-oops/note-api:2024-11-19-15
 
+      - name: Tag Image for Artifact Registry
+        run: |
+            docker tag ghcr.io/hs-heilbron-devsecops-omega-oops/note-api:2024-11-19-15 \
+            europe-west3-docker.pkg.dev/hs-heilbronn-devsecops/note-api/note-api:2024-11-19-15
+
+      - name: Push to Google Artifact Registry
+        run: |
+              gcloud auth configure-docker europe-west3-docker.pkg.dev
+              docker push europe-west3-docker.pkg.dev/hs-heilbronn-devsecops/note-api/note-api:2024-11-19-15
+
       - name: Deploy to Cloud Run
         uses: google-github-actions/deploy-cloudrun@v1
         with:
