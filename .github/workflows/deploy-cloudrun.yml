@@ -45,20 +45,19 @@ jobs:
       - name: Pull Docker Image
         run: docker pull ghcr.io/hs-heilbron-devsecops-omega-oops/note-api:2024-11-19-15
 
-      - name: Tag Image for Artifact Registry
-        run: |
-            docker tag ghcr.io/hs-heilbron-devsecops-omega-oops/note-api:2024-11-19-15 \
-            europe-west3-docker.pkg.dev/hs-heilbronn-devsecops/note-api/note-api:2024-11-19-15
+      - name: Authenticate Docker with Artifact Registry
+        run: gcloud auth configure-docker europe-west3-docker.pkg.dev
 
-      - name: Push to Google Artifact Registry
+      - name: Push Docker Image to Artifact Registry
         run: |
-              gcloud auth configure-docker europe-west3-docker.pkg.dev
+              docker tag ghcr.io/hs-heilbron-devsecops-omega-oops/note-api:2024-11-19-15 \
+              europe-west3-docker.pkg.dev/hs-heilbronn-devsecops/note-api/note-api:2024-11-19-15
               docker push europe-west3-docker.pkg.dev/hs-heilbronn-devsecops/note-api/note-api:2024-11-19-15
 
       - name: Deploy to Cloud Run
         uses: google-github-actions/deploy-cloudrun@v1
         with:
-          service: 'note-api-hs-heilbronn-devsecops-omega-oops'
-          image: 'ghcr.io/hs-heilbron-devsecops-omega-oops/note-api:2024-11-19-15'
-          region: 'europe-west3'
-          env_vars: BACKEND=memory
+            service: 'note-api-hs-heilbronn-devsecops-omega-oops'
+            image: 'europe-west3-docker.pkg.dev/hs-heilbronn-devsecops/note-api/note-api:2024-11-19-15'
+            region: 'europe-west3'
+            env_vars: BACKEND=memory
