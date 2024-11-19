@@ -27,6 +27,9 @@ jobs:
             workload_identity_provider: 'projects/70756149774/locations/global/workloadIdentityPools/github-actions/providers/github-repos'
             service_account: 'hshn-devsecops-service-account@hs-heilbronn-devsecops.iam.gserviceaccount.com'
 
+      - name: Check gcloud version
+        run: gcloud version
+
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v2
         with:
