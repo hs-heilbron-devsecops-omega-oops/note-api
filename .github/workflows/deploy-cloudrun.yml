@@ -6,7 +6,7 @@ on:
       - main
 
 permissions:
-  packages: write
+  id-token: write
   contents: read
 
 jobs:
@@ -24,14 +24,6 @@ jobs:
         with:
             workload_identity_provider: 'projects/70756149774/locations/global/workloadIdentityPools/github-actions/providers/github-repos'
             service_account: 'hshn-devsecops-service-account@hs-heilbronn-devsecops.iam.gserviceaccount.com'
-            create_credentials_file: true
-            export_environment_variables: true
-            cleanup_credentials: true
-            access_token_lifetime: 3600s
-            access_token_scopes: https://www.googleapis.com/auth/cloud-platform
-            retries: 3
-            backoff: 250
-            id_token_include_email: false
 
 
       - name: Set up gcloud CLI
