@@ -10,22 +10,20 @@ permissions:
   contents: read
   packages: read
 
-
 jobs:
   deploy:
     name: Build and Deploy to Google Cloud Run
     runs-on: ubuntu-latest
 
     steps:
-
       - name: Checkout repository
         uses: actions/checkout@v3
 
       - name: Authenticate with GCP
         uses: google-github-actions/auth@v1
         with:
-            workload_identity_provider: 'projects/70756149774/locations/global/workloadIdentityPools/github-actions/providers/github-repos'
-            service_account: 'hshn-devsecops-service-account@hs-heilbronn-devsecops.iam.gserviceaccount.com'
+          workload_identity_provider: 'projects/70756149774/locations/global/workloadIdentityPools/github-actions/providers/github-repos'
+          service_account: 'hshn-devsecops-service-account@hs-heilbronn-devsecops.iam.gserviceaccount.com'
 
       - name: Check gcloud version
         run: gcloud version
@@ -33,9 +31,9 @@ jobs:
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v2
         with:
-            registry: ghcr.io
-            username: ${{ github.actor }}
-            password: ${{ secrets.GITHUB_TOKEN }}
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up gcloud CLI
         uses: google-github-actions/setup-gcloud@v1
@@ -45,19 +43,18 @@ jobs:
       - name: Pull Docker Image
         run: docker pull ghcr.io/hs-heilbron-devsecops-omega-oops/note-api:2024-11-19-15
 
-      - name: Authenticate Docker with Artifact Registry
-        run: gcloud auth configure-docker europe-west3-docker.pkg.dev
-
-      - name: Push Docker Image to Artifact Registry
+      - name: Create or Update Cloud Run Service
         run: |
-              docker tag ghcr.io/hs-heilbron-devsecops-omega-oops/note-api:2024-11-19-15 \
-              europe-west3-docker.pkg.dev/hs-heilbronn-devsecops/note-api/note-api:2024-11-19-15
-              docker push europe-west3-docker.pkg.dev/hs-heilbronn-devsecops/note-api/note-api:2024-11-19-15
+          gcloud run deploy note-api-hs-heilbronn-devsecops-omega-oops \
+            --image ghcr.io/hs-heilbron-devsecops-omega-oops/note-api:2024-11-19-15 \
+            --region europe-west3 \
+            --platform managed \
+            --set-env-vars BACKEND=memory --update-env-vars --quiet
 
       - name: Deploy to Cloud Run
         uses: google-github-actions/deploy-cloudrun@v1
         with:
-            service: 'note-api-hs-heilbronn-devsecops-omega-oops'
-            image: 'europe-west3-docker.pkg.dev/hs-heilbronn-devsecops/note-api/note-api:2024-11-19-15'
-            region: 'europe-west3'
-            env_vars: BACKEND=memory
+          service: 'note-api-hs-heilbronn-devsecops-omega-oops'
+          image: 'ghcr.io/hs-heilbron-devsecops-omega-oops/note-api:2024-11-19-15'
+          region: 'europe-west3'
+          env_vars: BACKEND=memory
