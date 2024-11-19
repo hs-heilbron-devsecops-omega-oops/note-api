@@ -43,19 +43,10 @@ jobs:
       - name: Pull Docker Image
         run: docker pull ghcr.io/hs-heilbron-devsecops-omega-oops/note-api:2024-11-19-15
 
-      - name: Check if Cloud Run service exists
-        run: |
-            if ! gcloud run services describe note-api-hs-heilbronn-devsecops-omega-oops --region europe-west3; then
-              echo "Service does not exist. Creating service..."
-              gcloud run deploy note-api-hs-heilbronn-devsecops-omega-oops \
-                --image ghcr.io/hs-heilbron-devsecops-omega-oops/note-api:2024-11-19-15 \
-                --region europe-west3 \
-                --allow-unauthenticated \
-                --update-env-vars BACKEND=memory
-            else
-              echo "Service exists. Updating service..."
-              gcloud run deploy note-api-hs-heilbronn-devsecops-omega-oops \
-                --image ghcr.io/hs-heilbron-devsecops-omega-oops/note-api:2024-11-19-15 \
-                --region europe-west3 \
-                --update-env-vars BACKEND=memory
-            fi
+      - name: Deploy to Google Cloud Run
+        uses: google-github-actions/deploy-cloudrun@v1
+        with:
+          service: 'hs-heilbron-devsecops-omega-oops'
+          image: 'gcr.io/hs-heilbronn-devsecops/note-api:2024-11-19-15'
+          region: 'europe-west3'
+          env_vars: BACKEND=memory
