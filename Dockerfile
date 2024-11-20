@@ -18,5 +18,7 @@ RUN pip install --no-cache-dir -r requirements-dev.txt
 # Step 6: Copy the rest of the application files into the container
 COPY . .
 
+EXPOSE 8080
+
 # Step 7: Define the command to run the application
 CMD ["python", "main.py"]
