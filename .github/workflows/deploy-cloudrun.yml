@@ -91,3 +91,4 @@ jobs:
         run: |
             echo "Deployed image: europe-west3-docker.pkg.dev/hs-heilbronn-devsecops/cloud-run-source-deploy/note-api-hs-heilbron-devsecops-omega-oops:latest" | tee -a deployment.log
             gcloud logging write cloud-run-logs "Deployment initiated by GitHub Actions" --project=hs-heilbronn-devsecops
+        continue-on-error: true
