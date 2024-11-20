@@ -44,18 +44,22 @@ jobs:
         with:
           project_id: 'hs-heilbronn-devsecops'
 
+      - name: Configure Docker to use Artifact Registry
+        run: |
+          gcloud auth configure-docker europe-west3-docker.pkg.dev
+
       - name: Build Docker image
         run: |
-            docker build -t gcr.io/hs-heilbronn-devsecops/note-api:latest .
+          docker build -t europe-west3-docker.pkg.dev/hs-heilbronn-devsecops/note-api-repo/note-api:latest .
 
-      - name: Push Docker image to Google Container Registry
+      - name: Push Docker image to Artifact Registry
         run: |
-              docker push gcr.io/hs-heilbronn-devsecops/note-api:latest
+          docker push europe-west3-docker.pkg.dev/hs-heilbronn-devsecops/note-api-repo/note-api:latest
 
       - name: Deploy to Google Cloud Run
         uses: google-github-actions/deploy-cloudrun@v1
         with:
           service: 'hs-heilbron-devsecops-omega-oops'
-          image: 'gcr.io/hs-heilbronn-devsecops/note-api:2024-11-19-15'
+          image: 'europe-west3-docker.pkg.dev/hs-heilbronn-devsecops/note-api-repo/note-api:latest'
           region: 'europe-west3'
           env_vars: BACKEND=memory
