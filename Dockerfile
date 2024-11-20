@@ -21,4 +21,4 @@ COPY . .
 EXPOSE 8080
 
 # Step 7: Define the command to run the application
-CMD ["python", "main.py"]
+CMD ["uvicorn", "note_api.main:app", "--host", "0.0.0.0", "--port", "8080"]
