@@ -2,6 +2,8 @@
 from uuid import uuid4
 from typing import List, Optional
 from os import getenv
+
+import uvicorn
 from typing_extensions import Annotated
 
 from fastapi import Depends, FastAPI
@@ -62,3 +64,6 @@ def create_note(request: CreateNoteRequest,
     note_id = str(uuid4())
     backend.set(note_id, request)
     return note_id
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8080)
