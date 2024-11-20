@@ -44,13 +44,13 @@ jobs:
         with:
           project_id: 'hs-heilbronn-devsecops'
 
-      - name: Pull Docker Image
-        run: docker pull ghcr.io/hs-heilbron-devsecops-omega-oops/note-api:2024-11-19-15
-
-      - name: Build and push Docker image to GCR
+      - name: Build Docker image
         run: |
-            docker build -t gcr.io/hs-heilbronn-devsecops/note-api:2024-11-19-15 .
-            docker push gcr.io/hs-heilbronn-devsecops/note-api:2024-11-19-15
+            docker build -t gcr.io/hs-heilbronn-devsecops/note-api:latest .
+
+      - name: Push Docker image to Google Container Registry
+        run: |
+              docker push gcr.io/hs-heilbronn-devsecops/note-api:latest
 
       - name: Deploy to Google Cloud Run
         uses: google-github-actions/deploy-cloudrun@v1
