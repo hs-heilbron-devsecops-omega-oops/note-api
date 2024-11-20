@@ -37,17 +37,17 @@ jobs:
       - name: Log GCP authentication success
         run: echo "Successfully authenticated with GCP."
 
+      - name: Validate Service Account Permissions
+        run: |
+          gcloud projects get-iam-policy hs-heilbronn-devsecops \
+            --filter="bindings.members:serviceAccount:${{ secrets.SERVICE_ACCOUNT }}"
+
       - name: Enable Required APIs
         run: |
               gcloud services enable run.googleapis.com \
                                     artifactregistry.googleapis.com \
                                     cloudbuild.googleapis.com
           
-      - name: Validate Service Account Permissions
-        run: |
-          gcloud projects get-iam-policy hs-heilbronn-devsecops \
-            --filter="bindings.members:serviceAccount:${{ secrets.SERVICE_ACCOUNT }}"
-
       - name: Set up gcloud CLI
         uses: google-github-actions/setup-gcloud@v1
         with:
