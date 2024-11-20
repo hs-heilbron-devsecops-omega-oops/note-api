@@ -52,13 +52,6 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Enable required GCP services
-        run: |
-            gcloud services enable \
-              run.googleapis.com \
-              artifactregistry.googleapis.com \
-              cloudbuild.googleapis.com
-
       - name: Log Docker login success
         run: echo "Successfully logged into GitHub Container Registry."
 
