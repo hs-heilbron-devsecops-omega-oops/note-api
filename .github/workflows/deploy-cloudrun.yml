@@ -22,8 +22,12 @@ jobs:
       - name: Authenticate with GCP
         uses: google-github-actions/auth@v1
         with:
-          workload_identity_provider: 'projects/70756149774/locations/global/workloadIdentityPools/github-actions/providers/github-repos'
-          service_account: 'hshn-devsecops-service-account@hs-heilbronn-devsecops.iam.gserviceaccount.com'
+          workload_identity_provider: projects/70756149774/locations/global/workloadIdentityPools/github-actions/providers/github-repos
+          service_account: hshn-devsecops-service-account@hs-heilbronn-devsecops.iam.gserviceaccount.com
+          create_credentials_file: true
+          export_environment_variables: true
+          access_token_lifetime: 3600s
+          access_token_scopes: https://www.googleapis.com/auth/cloud-platform
 
       - name: Check gcloud version
         run: gcloud version
@@ -42,6 +46,11 @@ jobs:
 
       - name: Pull Docker Image
         run: docker pull ghcr.io/hs-heilbron-devsecops-omega-oops/note-api:2024-11-19-15
+
+      - name: Build and push Docker image to GCR
+        run: |
+            docker build -t gcr.io/hs-heilbronn-devsecops/note-api:2024-11-19-15 .
+            docker push gcr.io/hs-heilbronn-devsecops/note-api:2024-11-19-15
 
       - name: Deploy to Google Cloud Run
         uses: google-github-actions/deploy-cloudrun@v1
