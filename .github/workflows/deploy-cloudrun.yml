@@ -18,17 +18,29 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Log repository details
+        run: |
+          echo "Repository: ${{ github.repository }}"
+          echo "Branch: ${{ github.ref_name }}"
 
       - name: Authenticate with GCP
         uses: google-github-actions/auth@v1
         with:
-          workload_identity_provider: projects/70756149774/locations/global/workloadIdentityPools/github-actions/providers/github-repos
-          service_account: hshn-devsecops-service-account@hs-heilbronn-devsecops.iam.gserviceaccount.com
+          workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.SERVICE_ACCOUNT }}
           create_credentials_file: true
           export_environment_variables: true
           access_token_lifetime: 3600s
           access_token_scopes: https://www.googleapis.com/auth/cloud-platform
+      - name: Log GCP authentication success
+        run: echo "Successfully authenticated with GCP."
 
+      - name: Set up gcloud CLI
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          project_id: 'hs-heilbronn-devsecops'
       - name: Check gcloud version
         run: gcloud version
 
@@ -38,23 +50,23 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Set up gcloud CLI
-        uses: google-github-actions/setup-gcloud@v1
-        with:
-          project_id: 'hs-heilbronn-devsecops'
+      - name: Log Docker login success
+        run: echo "Successfully logged into GitHub Container Registry."
 
       - name: Configure Docker to use Artifact Registry
-        run: |
-          gcloud auth configure-docker europe-west3-docker.pkg.dev
+        run: gcloud auth configure-docker europe-west3-docker.pkg.dev
 
       - name: Build Docker image
         run: |
           docker build -t europe-west3-docker.pkg.dev/hs-heilbronn-devsecops/cloud-run-source-deploy/note-api-hs-heilbron-devsecops-omega-oops:latest .
+      - name: Log Docker build success
+        run: echo "Docker image built successfully."
 
       - name: Push Docker image to Artifact Registry
         run: |
           docker push europe-west3-docker.pkg.dev/hs-heilbronn-devsecops/cloud-run-source-deploy/note-api-hs-heilbron-devsecops-omega-oops:latest
+      - name: Log Docker push success
+        run: echo "Docker image pushed successfully to Artifact Registry."
 
       - name: Deploy to Google Cloud Run
         uses: google-github-actions/deploy-cloudrun@v1
@@ -64,3 +76,8 @@ jobs:
           region: 'europe-west3'
           env_vars: BACKEND=memory
           no_traffic: false
+      - name: Log Cloud Run deployment success
+        run: echo "Successfully deployed to Google Cloud Run."
+
+      - name: Get Cloud Run service details
+        run: gcloud run services describe note-api-hs-heilbron-devsecops-omega-oops --region europe-west3
