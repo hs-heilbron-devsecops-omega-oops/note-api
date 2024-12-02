@@ -12,14 +12,27 @@ permissions:
 
 jobs:
   deploy:
-    name: Trigger Google Cloud Build
+    name: Build and Deploy to Google Cloud Run
     runs-on: ubuntu-latest
 
     steps:
+
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
+
+
+      - name: Load configuration
+        id: config
+        run: |
+          echo "${{ secrets.CONFIG_JSON }}" | base64 --decode > config.json
+          cat config.json
+          echo "::set-output name=service_name::$(jq -r '.service_name' config.json)"
+          echo "::set-output name=region::$(jq -r '.region' config.json)"
+          echo "::set-output name=artifact_registry::$(jq -r '.artifact_registry' config.json)"
+          echo "::set-output name=env_vars::$(jq -r '.env_vars | tojson' config.json)"
+
 
       - name: Authenticate with GCP
         uses: google-github-actions/auth@v1
@@ -31,12 +44,33 @@ jobs:
           access_token_lifetime: 3600s
           access_token_scopes: https://www.googleapis.com/auth/cloud-platform
 
-      - name: Set up gcloud CLI
-        uses: google-github-actions/setup-gcloud@v1
-        with:
-          project_id: 'hs-heilbronn-devsecops'
 
-      - name: Trigger Google Cloud Build
+      - name: Configure Docker to use Artifact Registry
+        run: gcloud auth configure-docker ${{ steps.config.outputs.artifact_registry }}
+
+
+      - name: Build Docker image
         run: |
-          gcloud builds submit --config cloudbuild.json \
-            --substitutions _SERVICE_NAME=note-api-hs-heilbron-devsecops-omega-oops,_REGION=europe-west3,_IMAGE_TAG=${{ github.sha }}
+          docker build -t ${{ steps.config.outputs.artifact_registry }}/cloud-run-source-deploy/note-api:${{ github.sha }} .
+
+
+      - name: Push Docker image
+        run: |
+          docker push ${{ steps.config.outputs.artifact_registry }}/cloud-run-source-deploy/note-api:${{ github.sha }}
+
+
+      - name: Deploy to Google Cloud Run
+        uses: google-github-actions/deploy-cloudrun@v1
+        with:
+          service: ${{ steps.config.outputs.service_name }}
+          image: ${{ steps.config.outputs.artifact_registry }}/cloud-run-source-deploy/note-api:${{ github.sha }}
+          region: ${{ steps.config.outputs.region }}
+          env_vars: ${{ steps.config.outputs.env_vars }}
+          ingress: all
+          no_traffic: false
+
+
+      - name: Log Deployment Details
+        run: |
+          echo "Deployed service: ${{ steps.config.outputs.service_name }}"
+          echo "Region: ${{ steps.config.outputs.region }}"
