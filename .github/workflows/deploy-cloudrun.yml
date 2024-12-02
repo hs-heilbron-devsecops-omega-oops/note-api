@@ -36,13 +36,7 @@ jobs:
         with:
           project_id: 'hs-heilbronn-devsecops'
 
-
       - name: Trigger Google Cloud Build
         run: |
           gcloud builds submit --config cloudbuild.json \
-            --substitutions _SERVICE_NAME=note-api-hs-heilbron-devsecops-omega-oops,_REGION=europe-west3,_IMAGE_TAG=${{ github.sha }} \
-            --async
-
-      - name: Display Build Logs URL
-        run: |
-          echo "Build triggered successfully. You can view logs at: https://console.cloud.google.com/cloud-build/builds?project=hs-heilbronn-devsecops"
+            --substitutions _SERVICE_NAME=note-api-hs-heilbron-devsecops-omega-oops,_REGION=europe-west3,_IMAGE_TAG=${{ github.sha }}

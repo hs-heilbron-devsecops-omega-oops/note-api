@@ -1,8 +1,4 @@
 {
-  "options": {
-    "logging": "CLOUD_LOGGING_ONLY"
-  },
-
   "steps": [
     {
       "name": "gcr.io/cloud-builders/docker",
@@ -44,5 +40,8 @@
     "_SERVICE_NAME": "note-api-hs-heilbron-devsecops-omega-oops",
     "_REGION": "europe-west3",
     "_IMAGE_TAG": "latest"
+  },
+  "options": {
+    "logging": "CLOUD_LOGGING_ONLY"
   }
 }
