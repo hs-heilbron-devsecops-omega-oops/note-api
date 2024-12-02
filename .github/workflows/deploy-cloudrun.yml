@@ -23,6 +23,7 @@ jobs:
           fetch-depth: 0
 
 
+
       - name: Load configuration
         run: |
           echo "${{ secrets.CONFIG_JSON }}" | base64 --decode > config.json
@@ -46,7 +47,7 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t ${{ env.artifact_registry }}/cloud-run-source-deploy/note-api:${{ github.sha }} .
+          docker build -t ${{ env.artifact_registry }}/note-api-hs-heilbron-devsecops-omega-oops:${{ github.sha }} .
 
 
       - name: Push Docker image
