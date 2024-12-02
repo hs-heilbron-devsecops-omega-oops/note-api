@@ -55,6 +55,7 @@ jobs:
           docker push ${{ env.artifact_registry }}/cloud-run-source-deploy/note-api:${{ github.sha }}
 
 
+
       - name: Deploy to Google Cloud Run
         uses: google-github-actions/deploy-cloudrun@v1
         with:
