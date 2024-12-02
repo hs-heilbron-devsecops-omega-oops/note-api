@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   deploy:
-    name: Build and Deploy to Google Cloud Run
+    name: Deploy to Google Cloud Run
     runs-on: ubuntu-latest
 
     steps:
@@ -27,7 +27,6 @@ jobs:
         id: config
         run: |
           echo "${{ secrets.CONFIG_JSON }}" | base64 --decode > config.json
-          cat config.json
           echo "::set-output name=service_name::$(jq -r '.service_name' config.json)"
           echo "::set-output name=region::$(jq -r '.region' config.json)"
           echo "::set-output name=artifact_registry::$(jq -r '.artifact_registry' config.json)"
@@ -37,13 +36,9 @@ jobs:
       - name: Authenticate with GCP
         uses: google-github-actions/auth@v1
         with:
-          WORKLOAD_IDENTITY_PROVIDER: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
+          workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ secrets.SERVICE_ACCOUNT }}
           create_credentials_file: true
-          export_environment_variables: true
-          access_token_lifetime: 3600s
-          access_token_scopes: https://www.googleapis.com/auth/cloud-platform
-
 
       - name: Configure Docker to use Artifact Registry
         run: gcloud auth configure-docker ${{ steps.config.outputs.artifact_registry }}
@@ -67,10 +62,3 @@ jobs:
           region: ${{ steps.config.outputs.region }}
           env_vars: ${{ steps.config.outputs.env_vars }}
           ingress: all
-          no_traffic: false
-
-
-      - name: Log Deployment Details
-        run: |
-          echo "Deployed service: ${{ steps.config.outputs.service_name }}"
-          echo "Region: ${{ steps.config.outputs.region }}"

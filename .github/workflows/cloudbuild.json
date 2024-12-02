@@ -1,9 +1,0 @@
-{
-  "service_name": "note-api-hs-heilbron-devsecops-omega-oops",
-  "region": "europe-west3",
-  "artifact_registry": "europe-west3-docker.pkg.dev",
-  "project_id": "hs-heilbronn-devsecops",
-  "env_vars": {
-    "BACKEND": "memory"
-  }
-}
