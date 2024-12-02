@@ -97,6 +97,11 @@ jobs:
 
       - name: Log Deployment Details
         run: |
-              echo "Deployed image: ${{ env.artifact_registry }}/hs-heilbronn-devsecops/cloud-run-source-deploy/note-api-hs-heilbron-devsecops-omega-oops:latest" | tee -a deployment.log
-              gcloud logging write cloud-run-logs "Deployment initiated by GitHub Actions" --project=hs-heilbronn-devsecops
+              echo "Deployed image: ${{ env.artifact_registry }}/hs-heilbronn-devsecops/cloud-run-source-deploy/note-api-hs-heilbron-devsecops-omega-oops:${{ github.sha }} > deployment.log
         continue-on-error: true
+
+      - name: Upload Deployment Log
+        uses: actions/upload-artifact@v3
+        with:
+            name: deployment-log
+            path: deployment.log
