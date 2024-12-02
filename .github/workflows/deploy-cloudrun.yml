@@ -36,6 +36,7 @@ jobs:
         with:
           project_id: 'hs-heilbronn-devsecops'
 
+
       - name: Trigger Google Cloud Build
         run: |
           gcloud builds submit --config cloudbuild.json \
