@@ -35,6 +35,7 @@
       ]
     }
   ],
+
   "timeout": "1200s",
   "substitutions": {
     "_SERVICE_NAME": "note-api-hs-heilbron-devsecops-omega-oops",
