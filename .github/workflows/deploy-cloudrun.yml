@@ -24,13 +24,12 @@ jobs:
 
 
       - name: Load configuration
-        id: config
         run: |
           echo "${{ secrets.CONFIG_JSON }}" | base64 --decode > config.json
-          echo "::set-output name=service_name::$(jq -r '.service_name' config.json)"
-          echo "::set-output name=region::$(jq -r '.region' config.json)"
-          echo "::set-output name=artifact_registry::$(jq -r '.artifact_registry' config.json)"
-          echo "::set-output name=env_vars::$(jq -r '.env_vars | tojson' config.json)"
+          echo "service_name=$(jq -r '.service_name' config.json)" >> $GITHUB_ENV
+          echo "region=$(jq -r '.region' config.json)" >> $GITHUB_ENV
+          echo "artifact_registry=$(jq -r '.artifact_registry' config.json)" >> $GITHUB_ENV
+          echo "env_vars=$(jq -r '.env_vars | tojson' config.json)" >> $GITHUB_ENV
 
 
       - name: Authenticate with GCP
@@ -40,25 +39,26 @@ jobs:
           service_account: ${{ secrets.SERVICE_ACCOUNT }}
           create_credentials_file: true
 
+
       - name: Configure Docker to use Artifact Registry
-        run: gcloud auth configure-docker ${{ steps.config.outputs.artifact_registry }}
+        run: gcloud auth configure-docker ${{ env.artifact_registry }}
 
 
       - name: Build Docker image
         run: |
-          docker build -t ${{ steps.config.outputs.artifact_registry }}/cloud-run-source-deploy/note-api:${{ github.sha }} .
+          docker build -t ${{ env.artifact_registry }}/cloud-run-source-deploy/note-api:${{ github.sha }} .
 
 
       - name: Push Docker image
         run: |
-          docker push ${{ steps.config.outputs.artifact_registry }}/cloud-run-source-deploy/note-api:${{ github.sha }}
+          docker push ${{ env.artifact_registry }}/cloud-run-source-deploy/note-api:${{ github.sha }}
 
 
       - name: Deploy to Google Cloud Run
         uses: google-github-actions/deploy-cloudrun@v1
         with:
-          service: ${{ steps.config.outputs.service_name }}
-          image: ${{ steps.config.outputs.artifact_registry }}/cloud-run-source-deploy/note-api:${{ github.sha }}
-          region: ${{ steps.config.outputs.region }}
-          env_vars: ${{ steps.config.outputs.env_vars }}
+          service: ${{ env.service_name }}
+          image: ${{ env.artifact_registry }}/cloud-run-source-deploy/note-api:${{ github.sha }}
+          region: ${{ env.region }}
+          env_vars: ${{ env.env_vars }}
           ingress: all
