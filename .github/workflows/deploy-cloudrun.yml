@@ -40,7 +40,7 @@ jobs:
         run: |
           gcloud builds submit --config cloudbuild.json \
             --substitutions _SERVICE_NAME=note-api-hs-heilbron-devsecops-omega-oops,_REGION=europe-west3,_IMAGE_TAG=${{ github.sha }} \
-            --no-stream
+            --async
 
       - name: Display Build Logs URL
         run: |
