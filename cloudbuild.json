@@ -5,7 +5,7 @@
       "args": [
         "build",
         "-t",
-        "europe-west3-docker.pkg.dev/hs-heilbronn-devsecops/cloud-run-source-deploy/note-api-hs-heilbron-devsecops-omega-oops:${_IMAGE_TAG}",
+        "europe-west3-docker.pkg.dev/hs-heilbronn-devsecops/cloud-run-source-deploy/note-api:${_IMAGE_TAG}",
         "."
       ]
     },
@@ -13,7 +13,7 @@
       "name": "gcr.io/cloud-builders/docker",
       "args": [
         "push",
-        "europe-west3-docker.pkg.dev/hs-heilbronn-devsecops/cloud-run-source-deploy/note-api-hs-heilbron-devsecops-omega-oops:${_IMAGE_TAG}"
+        "europe-west3-docker.pkg.dev/hs-heilbronn-devsecops/cloud-run-source-deploy/note-api:${_IMAGE_TAG}"
       ]
     },
     {
@@ -24,7 +24,7 @@
         "deploy",
         "${_SERVICE_NAME}",
         "--image",
-        "europe-west3-docker.pkg.dev/hs-heilbronn-devsecops/cloud-run-source-deploy/note-api-hs-heilbron-devsecops-omega-oops:${_IMAGE_TAG}",
+        "europe-west3-docker.pkg.dev/hs-heilbronn-devsecops/cloud-run-source-deploy/note-api:${_IMAGE_TAG}",
         "--region",
         "${_REGION}",
         "--platform",
