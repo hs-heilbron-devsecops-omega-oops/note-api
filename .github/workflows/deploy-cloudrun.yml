@@ -20,10 +20,6 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - name: Log repository details
-        run: |
-          echo "Repository: ${{ github.repository }}"
-          echo "Branch: ${{ github.ref_name }}"
 
       - name: Authenticate with GCP
         uses: google-github-actions/auth@v1
@@ -35,60 +31,11 @@ jobs:
           access_token_lifetime: 3600s
           access_token_scopes: https://www.googleapis.com/auth/cloud-platform
 
-      - name: Log GCP authentication success
-        run: echo "Successfully authenticated with GCP."
-
       - name: Set up gcloud CLI
         uses: google-github-actions/setup-gcloud@v1
         with:
           project_id: 'hs-heilbronn-devsecops'
-      - name: Check gcloud version
-        run: gcloud version
 
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v2
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Log Docker login success
-        run: echo "Successfully logged into GitHub Container Registry."
-
-      - name: Configure Docker to use Artifact Registry
-        run: gcloud auth configure-docker europe-west3-docker.pkg.dev
-
-      - name: Build Docker image
+      - name: Trigger Google Cloud Build
         run: |
-          docker build -t europe-west3-docker.pkg.dev/hs-heilbronn-devsecops/cloud-run-source-deploy/note-api-hs-heilbron-devsecops-omega-oops:latest .
-
-      - name: Log Docker build success
-        run: echo "Docker image built successfully."
-
-      - name: Push Docker image to Artifact Registry
-        run: |
-          docker push europe-west3-docker.pkg.dev/hs-heilbronn-devsecops/cloud-run-source-deploy/note-api-hs-heilbron-devsecops-omega-oops:latest
-      - name: Log Docker push success
-        run: echo "Docker image pushed successfully to Artifact Registry."
-
-      - name: Deploy to Google Cloud Run
-        uses: google-github-actions/deploy-cloudrun@v1
-        with:
-          service: 'note-api-hs-heilbron-devsecops-omega-oops'
-          image: 'europe-west3-docker.pkg.dev/hs-heilbronn-devsecops/cloud-run-source-deploy/note-api-hs-heilbron-devsecops-omega-oops:latest'
-          region: 'europe-west3'
-          env_vars: BACKEND=memory
-          ingress: all
-          no_traffic: false
-
-      - name: Log Cloud Run deployment success
-        run: echo "Successfully deployed to Google Cloud Run."
-
-      - name: Get Cloud Run service details
-        run: gcloud run services describe note-api-hs-heilbron-devsecops-omega-oops --region europe-west3
-
-      - name: Log Deployment Details
-        run: |
-            echo "Deployed image: europe-west3-docker.pkg.dev/hs-heilbronn-devsecops/cloud-run-source-deploy/note-api-hs-heilbron-devsecops-omega-oops:latest" | tee -a deployment.log
-            gcloud logging write cloud-run-logs "Deployment initiated by GitHub Actions" --project=hs-heilbronn-devsecops
-        continue-on-error: true
+          gcloud builds submit --config cloudbuild.json --substitutions _SERVICE_NAME=note-api-hs-heilbron-devsecops-omega-oops,_REGION=europe-west3,_IMAGE_TAG=${{ github.sha }}
