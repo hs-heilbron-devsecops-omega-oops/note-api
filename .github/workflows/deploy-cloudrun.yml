@@ -52,7 +52,7 @@ jobs:
 
       - name: Push Docker image
         run: |
-          docker push ${{ env.artifact_registry }}/cloud-run-source-deploy/note-api:${{ github.sha }}
+          docker push ${{ env.artifact_registry }}/note-api-hs-heilbron-devsecops-omega-oops:${{ github.sha }}
 
 
 
