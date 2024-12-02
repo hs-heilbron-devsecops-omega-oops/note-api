@@ -39,20 +39,43 @@ jobs:
           workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ secrets.SERVICE_ACCOUNT }}
           create_credentials_file: true
+          export_environment_variables: true
+          access_token_lifetime: 3600s
+          access_token_scopes: https://www.googleapis.com/auth/cloud-platform
 
+      - name: Log GCP authentication success
+        run: echo "Successfully authenticated with GCP."
+
+
+      - name: Set up gcloud CLI
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+            project_id: 'hs-heilbronn-devsecops'
+
+      - name: Check gcloud version
+        run: gcloud version
+
+      - name: Log Docker login success
+        run: echo "Successfully logged into GitHub Container Registry."
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+            registry: ghcr.io
+            username: ${{ github.actor }}
+            password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Configure Docker to use Artifact Registry
         run: gcloud auth configure-docker ${{ env.artifact_registry }}
 
-
       - name: Build Docker image
         run: |
-          docker build -t ${{ env.artifact_registry }}/note-api-hs-heilbron-devsecops-omega-oops:${{ github.sha }} .
+          docker build -t ${{ env.artifact_registry }}/hs-heilbronn-devsecops/cloud-run-source-deploy/note-api-hs-heilbron-devsecops-omega-oops:${{ github.sha }} .
 
 
       - name: Push Docker image
         run: |
-          docker push ${{ env.artifact_registry }}/note-api-hs-heilbron-devsecops-omega-oops:${{ github.sha }}
+          docker push ${{ env.artifact_registry }}/hs-heilbronn-devsecops/cloud-run-source-deploy/note-api-hs-heilbron-devsecops-omega-oops:${{ github.sha }}
 
 
 
@@ -60,7 +83,20 @@ jobs:
         uses: google-github-actions/deploy-cloudrun@v1
         with:
           service: ${{ env.service_name }}
-          image: ${{ env.artifact_registry }}/cloud-run-source-deploy/note-api:${{ github.sha }}
+          image: ${{ env.artifact_registry }}/hs-heilbronn-devsecops/cloud-run-source-deploy/note-api-hs-heilbron-devsecops-omega-oops:${{ github.sha }}
           region: ${{ env.region }}
           env_vars: ${{ env.env_vars }}
           ingress: all
+          no_traffic: false
+
+      - name: Log Cloud Run deployment success
+        run: echo "Successfully deployed to Google Cloud Run."
+
+      - name: Get Cloud Run service details
+        run: gcloud run services describe note-api-hs-heilbron-devsecops-omega-oops --region europe-west3
+
+      - name: Log Deployment Details
+        run: |
+              echo "Deployed image: ${{ env.artifact_registry }}/hs-heilbronn-devsecops/cloud-run-source-deploy/note-api-hs-heilbron-devsecops-omega-oops:latest" | tee -a deployment.log
+              gcloud logging write cloud-run-logs "Deployment initiated by GitHub Actions" --project=hs-heilbronn-devsecops
+        continue-on-error: true
