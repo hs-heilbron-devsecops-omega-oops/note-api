@@ -50,7 +50,7 @@ jobs:
       - name: Set up gcloud CLI
         uses: google-github-actions/setup-gcloud@v1
         with:
-            project_id: 'hs-heilbronn-devsecops'
+            project_id: ${{ secrets.PROJECT_ID }}
 
       - name: Check gcloud version
         run: gcloud version
