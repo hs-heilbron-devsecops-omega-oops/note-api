@@ -68,16 +68,10 @@ jobs:
       - name: Configure Docker to use Artifact Registry
         run: gcloud auth configure-docker ${{ env.artifact_registry }}
 
-      - name: Build Docker image
+      - name: Pull pre-built Docker image from GHCR
         run: |
-          docker build -t ${{ env.artifact_registry }}/hs-heilbronn-devsecops/cloud-run-source-deploy/note-api-hs-heilbron-devsecops-omega-oops:${{ github.sha }} .
-
-
-      - name: Push Docker image
-        run: |
-          docker push ${{ env.artifact_registry }}/hs-heilbronn-devsecops/cloud-run-source-deploy/note-api-hs-heilbron-devsecops-omega-oops:${{ github.sha }}
-
-
+            docker pull ghcr.io/${{ github.repository }}/note-api:${{ github.sha }}
+            echo "IMAGE_NAME=ghcr.io/${{ github.repository }}/note-api:${{ github.sha }}" >> $GITHUB_ENV
 
       - name: Deploy to Google Cloud Run
         uses: google-github-actions/deploy-cloudrun@v1
