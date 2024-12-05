@@ -75,7 +75,7 @@ jobs:
         run: echo "${{ env.IMAGE_NAME }}" > image-name.txt
 
       - name: Upload Image Name Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
              name: image-name
              path: image-name.txt
