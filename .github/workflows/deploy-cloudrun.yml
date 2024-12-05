@@ -17,7 +17,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
@@ -25,39 +24,46 @@ jobs:
 
       - name: Debug Workflow Run Context
         run: |
-            echo "Triggered by workflow: ${{ github.event.workflow_run.name }}"
-            echo "Triggered workflow ID: ${{ github.event.workflow_run.id }}"
-            echo "Triggered workflow run number: ${{ github.event.workflow_run.run_number }}"
-            echo "Triggered workflow URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }}"
+          echo "Triggered by workflow: ${{ github.event.workflow_run.name }}"
+          echo "Triggered workflow ID: ${{ github.event.workflow_run.id }}"
+          echo "Triggered workflow run number: ${{ github.event.workflow_run.run_number }}"
+          echo "Triggered workflow URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }}"
 
-      - name: Download Image Name Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: image-name
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          repository: ${{ github.repository }}
-          run-id: ${{ github.event.workflow_run.id }}
-
-      - name: Authenticate with GitHub Container Registry
+      - name: Retrieve Build Number
+        id: retrieve_build_number
         run: |
-          echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          BUILD_NUMBER_FILE=".github/build_number.txt"
 
+          
+          if [ -f "$BUILD_NUMBER_FILE" ]; then
+            BUILD_NUMBER=$(cat "$BUILD_NUMBER_FILE")
+          else
+            BUILD_NUMBER=0
+          fi
 
-      - name: Read Image Name
+  
+          BUILD_NUMBER=$((BUILD_NUMBER + 1))
+          echo "$BUILD_NUMBER" > "$BUILD_NUMBER_FILE"
+
+    
+          DATE=$(date +'%Y-%m-%d')
+          TAGGED_IMAGE="europe-west3-docker.pkg.dev/hs-heilbronn-devsecops/cloud-run-source-deploy/note-api-hs-heilbron-devsecops-omega-oops:${DATE}-${BUILD_NUMBER}"
+
+          echo "TAGGED_IMAGE=$TAGGED_IMAGE" >> $GITHUB_ENV
+          echo "BUILD_NUMBER=$BUILD_NUMBER" >> $GITHUB_ENV
+          echo "Generated image tag: $TAGGED_IMAGE"
+
+      - name: Push Image to Google Artifact Registry
         run: |
-          IMAGE_NAME=$(cat image-name.txt)
-          echo "Using Image Name: $IMAGE_NAME"
-          echo "IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_ENV
-      
+          docker tag ${{ env.IMAGE_NAME }} ${{ env.TAGGED_IMAGE }}
+          docker push ${{ env.TAGGED_IMAGE }}
 
       - name: Load configuration
         run: |
           echo "${{ secrets.CONFIG_JSON }}" | base64 --decode > config.json
           echo "service_name=$(jq -r '.service_name' config.json)" >> $GITHUB_ENV
           echo "region=$(jq -r '.region' config.json)" >> $GITHUB_ENV
-          echo "artifact_registry=$(jq -r '.artifact_registry' config.json)" >> $GITHUB_ENV
           echo "env_vars=$(jq -r '.env_vars | tojson' config.json)" >> $GITHUB_ENV
-      
 
       - name: Authenticate with GCP
         uses: google-github-actions/auth@v1
@@ -67,14 +73,11 @@ jobs:
           create_credentials_file: true
           export_environment_variables: true
 
-      - name: Log GCP authentication success
-        run: echo "Successfully authenticated with GCP."
-
       - name: Deploy to Google Cloud Run
         run: |
           gcloud run deploy ${{ env.service_name }} \
             --quiet \
-            --image ${{ env.IMAGE_NAME }} \
+            --image ${{ env.TAGGED_IMAGE }} \
             --update-env-vars "$(echo ${{ env.env_vars }} | jq -r 'to_entries|map("\(.key)=\(.value|tostring)")|join(",")')" \
             --platform managed \
             --region ${{ env.region }}
@@ -84,12 +87,6 @@ jobs:
 
       - name: Log Deployment Details
         run: |
-          echo "Deployed image: ${{ env.IMAGE_NAME }}" > deployment.log
+          echo "Deployed image: ${{ env.TAGGED_IMAGE }}" > deployment.log
           echo "Service name: ${{ env.service_name }}" >> deployment.log
           echo "Region: ${{ env.region }}" >> deployment.log
-
-      - name: Upload Deployment Log
-        uses: actions/upload-artifact@v3
-        with:
-          name: deployment-log
-          path: deployment.log
