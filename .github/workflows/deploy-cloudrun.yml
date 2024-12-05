@@ -53,6 +53,8 @@ jobs:
           echo "service_name=$(jq -r '.service_name' config.json)" >> $GITHUB_ENV
           echo "region=$(jq -r '.region' config.json)" >> $GITHUB_ENV
           echo "env_vars=$(jq -r '.env_vars | tojson' config.json)" >> $GITHUB_ENV
+          echo "artifact_registry=$(jq -r '.artifact_registry' config.json)" >> $GITHUB_ENV
+
 
       - name: Pull Source Image if Not Available
         run: |
