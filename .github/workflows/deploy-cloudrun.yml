@@ -70,7 +70,7 @@ jobs:
 
       - name: List images in GHCR
         run: |
-          curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+          curl -H "Authorization: Bearer ${{ secrets.GHCR_PAT }}" \
                https://ghcr.io/v2/hs-heilbron-devsecops-omega-oops/note-api/tags/list  
 
       - name: Pull pre-built Docker image from GHCR
