@@ -84,6 +84,11 @@ jobs:
              path: image-name.txt
              retention-days: 7
 
+      - name: List Uploaded Artifacts
+        run: |
+          curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+          https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts
+
       - name: Log Build Workflow Context
         run: |
             echo "Workflow Name: Build and Push Docker Image"
