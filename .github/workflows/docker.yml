@@ -61,6 +61,8 @@ jobs:
           docker build -t $IMAGE_NAME .
           echo "IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_ENV
           echo "$IMAGE_NAME" > image-name.txt
+          echo "$TIMESTAMP-$RUN_NUMBER" > built-number.txt
+          
 
       - name: Push Docker image to GitHub Container Registry
         run: |
@@ -82,7 +84,14 @@ jobs:
         with:
              name: image-name
              path: image-name.txt
-             retention-days: 7
+             retention-days: 1
+
+      - name: Upload Image Name Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: built-number
+          path: built-number.txt
+          retention-days: 1
 
       - name: List Uploaded Artifacts
         run: |
