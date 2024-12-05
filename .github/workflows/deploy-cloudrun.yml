@@ -84,11 +84,6 @@ jobs:
           echo "BUILD_NUMBER=$BUILD_NUMBER" >> $GITHUB_ENV
           echo "Generated image tag: $TAGGED_IMAGE"
 
-      - name: Push Image to Google Artifact Registry
-        run: |
-          docker tag ${{ env.IMAGE_NAME }} ${{ env.TAGGED_IMAGE }}
-          docker push ${{ env.TAGGED_IMAGE }}
-
       - name: Load configuration
         run: |
           echo "${{ secrets.CONFIG_JSON }}" | base64 --decode > config.json
@@ -103,15 +98,38 @@ jobs:
           service_account: ${{ secrets.SERVICE_ACCOUNT }}
           create_credentials_file: true
           export_environment_variables: true
+          access_token_lifetime: 3600s
+          access_token_scopes: https://www.googleapis.com/auth/cloud-platform
+
+      - name: Log GCP authentication success
+        run: echo "Successfully authenticated with GCP."
+
+
+      - name: Set up gcloud CLI
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+            project_id: ${{ secrets.PROJECT_ID }}
+
+      - name: Check gcloud version
+        run: gcloud version
+
+      - name: Log Docker login success
+        run: echo "Successfully logged into GitHub Container Registry."
+
+      - name: Push Image to Google Artifact Registry
+        run: |
+          docker tag ${{ env.IMAGE_NAME }} ${{ env.TAGGED_IMAGE }}
+          docker push ${{ env.TAGGED_IMAGE }}        
 
       - name: Deploy to Google Cloud Run
-        run: |
-          gcloud run deploy ${{ env.service_name }} \
-            --quiet \
-            --image ${{ env.TAGGED_IMAGE }} \
-            --update-env-vars "$(echo ${{ env.env_vars }} | jq -r 'to_entries|map("\(.key)=\(.value|tostring)")|join(",")')" \
-            --platform managed \
-            --region ${{ env.region }}
+        uses: google-github-actions/deploy-cloudrun@v1
+        with:
+            service: ${{ env.service_name }}
+            image: ${{ env.TAGGED_IMAGE }}
+            region: ${{ env.region }}
+            env_vars: ${{ env.env_vars }}
+            ingress: all
+            no_traffic: false
 
       - name: Get Cloud Run service details
         run: gcloud run services describe ${{ env.service_name }} --region ${{ env.region }}
