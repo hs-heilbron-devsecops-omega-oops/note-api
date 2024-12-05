@@ -88,9 +88,8 @@ jobs:
       - name: Retrieve Build Number
         id: retrieve_build_number
         run: |
-          BUILD_NUMBER_FILE=".github/build_number.txt"
-
-          TAGGED_IMAGE="${{ env.artifact_registry }}/hs-heilbronn-devsecops/cloud-run-source-deploy/note-api-hs-heilbron-devsecops-omega-oops:${BUILD_NUMBER}"
+          
+          TAGGED_IMAGE="${{ env.artifact_registry }}/hs-heilbronn-devsecops/cloud-run-source-deploy/note-api-hs-heilbron-devsecops-omega-oops:${{ env.BUILD_NUMBER }}"
 
           echo "TAGGED_IMAGE=$TAGGED_IMAGE" >> $GITHUB_ENV
           echo "BUILD_NUMBER=$BUILD_NUMBER" >> $GITHUB_ENV
