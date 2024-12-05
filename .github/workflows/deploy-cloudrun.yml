@@ -70,17 +70,9 @@ jobs:
       - name: Log GCP authentication success
         run: echo "Successfully authenticated with GCP."
 
-
-      - name: Set up gcloud CLI
-        uses: google-github-actions/setup-gcloud@v1
-        with:
-            project_id: ${{ secrets.PROJECT_ID }}
-
-      - name: Check gcloud version
-        run: gcloud version
-
-      - name: Configure Docker to use Artifact Registry
-        run: gcloud auth configure-docker ${{ env.artifact_registry }}
+      - name: Authenticate with GitHub Container Registry
+        run: |
+          echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
       - name: Deploy to Google Cloud Run
         uses: google-github-actions/deploy-cloudrun@v1
@@ -89,22 +81,20 @@ jobs:
           image: ${{ env.IMAGE_NAME }}
           region: ${{ env.region }}
           env_vars: ${{ env.env_vars }}
-          ingress: all
           no_traffic: false
 
       - name: Log Cloud Run deployment success
         run: echo "Successfully deployed to Google Cloud Run."
 
       - name: Get Cloud Run service details
-        run: gcloud run services describe note-api-hs-heilbron-devsecops-omega-oops --region europe-west3
+        run: gcloud run services describe ${{ env.service_name }} --region ${{ env.region }}
 
       - name: Log Deployment Details
         run: |
-              echo "Deployed image: ${{ env.artifact_registry }}/hs-heilbronn-devsecops/cloud-run-source-deploy/note-api-hs-heilbron-devsecops-omega-oops:${{ github.sha }}" > deployment.log
-        continue-on-error: true
+          echo "Deployed image: ${{ env.IMAGE_NAME }}" > deployment.log
 
       - name: Upload Deployment Log
         uses: actions/upload-artifact@v3
         with:
-            name: deployment-log
-            path: deployment.log
+          name: deployment-log
+          path: deployment.log
