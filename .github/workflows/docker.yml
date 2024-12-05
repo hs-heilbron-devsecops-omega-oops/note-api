@@ -71,6 +71,3 @@ jobs:
             echo "Verifying image-name.txt"
             ls -l image-name.txt
             cat image-name.txt
-
-      - name: Save Image Name to Workspace
-        run: mv image-name.txt $GITHUB_WORKSPACE/
