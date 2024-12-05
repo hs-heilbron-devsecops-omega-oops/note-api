@@ -27,6 +27,8 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: image-name
+        continue-on-error: true
+
       - name: Debug artifact contents
         run: |
           echo "Contents of image-name.txt:"
