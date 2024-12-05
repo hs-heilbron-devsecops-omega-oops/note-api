@@ -73,3 +73,8 @@ jobs:
         with:
           name: image-name
           path: image-name.txt
+
+      - name: Log artifact upload
+        run: |
+          ls -l image-name.txt
+          echo "Artifact image-name.txt exists."
