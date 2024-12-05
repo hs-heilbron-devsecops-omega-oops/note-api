@@ -42,6 +42,7 @@ jobs:
         run: |
           echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
+
       - name: Read Image Name
         run: |
           IMAGE_NAME=$(cat image-name.txt)
