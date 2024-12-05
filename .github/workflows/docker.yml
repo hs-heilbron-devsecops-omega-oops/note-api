@@ -64,3 +64,12 @@ jobs:
       - name: Push Docker image to GitHub Container Registry
         run: |
           docker push ${{ env.IMAGE_NAME }}
+
+      - name: Save image name artifact
+        run: echo "${{ env.IMAGE_NAME }}" > image-name.txt
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: image-name
+          path: image-name.txt
