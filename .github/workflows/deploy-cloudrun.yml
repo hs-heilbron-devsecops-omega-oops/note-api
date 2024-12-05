@@ -47,6 +47,18 @@ jobs:
           echo "Using Image Name: $IMAGE_NAME"
           echo "IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_ENV
 
+      - name: Pull Source Image if Not Available
+        run: |
+          SOURCE_IMAGE="${{ env.IMAGE_NAME }}"
+
+          
+          if ! docker images | grep -q "$(echo $SOURCE_IMAGE | cut -d':' -f2)"; then
+            echo "Source image not found locally. Pulling image: $SOURCE_IMAGE"
+            docker pull $SOURCE_IMAGE
+          else
+            echo "Source image found locally: $SOURCE_IMAGE"
+          fi
+          
 
       - name: Retrieve Build Number
         id: retrieve_build_number
