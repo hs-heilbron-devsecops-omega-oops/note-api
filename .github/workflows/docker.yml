@@ -71,3 +71,10 @@ jobs:
             echo "Verifying image-name.txt"
             ls -l image-name.txt
             cat image-name.txt
+
+      - name: Log Build Workflow Context
+        run: |
+            echo "Workflow Name: Build and Push Docker Image"
+            echo "Workflow ID: ${{ github.run_id }}"
+            echo "Workflow Run Number: ${{ github.run_number }}"
+            echo "Workflow URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
