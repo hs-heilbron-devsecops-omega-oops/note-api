@@ -113,6 +113,10 @@ jobs:
       - name: Check gcloud version
         run: gcloud version
 
+      - name: Verify Authentication
+        run: gcloud auth list
+
+
       - name: Log Docker login success
         run: echo "Successfully logged into GitHub Container Registry."
 
