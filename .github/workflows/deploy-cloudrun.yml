@@ -23,18 +23,12 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Debug Workflow Context
+      - name: Debug Workflow Run Context
         run: |
-            echo "Triggered by workflow: ${{ github.event.workflow_run.workflow_id }}"
-            echo "Run number: ${{ github.event.workflow_run.run_number }}"
-            echo "Event details: ${{ toJSON(github.event) }}"
-
-      - name: Debug Workspace
-        run: |
-          echo "Current working directory:"
-          pwd
-          echo "Files in workspace:"
-          ls -l
+            echo "Triggered by workflow: ${{ github.event.workflow_run.name }}"
+            echo "Triggered workflow ID: ${{ github.event.workflow_run.id }}"
+            echo "Triggered workflow run number: ${{ github.event.workflow_run.run_number }}"
+            echo "Triggered workflow URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }}"
 
       - name: Read Image Name from Workspace
         run: |
