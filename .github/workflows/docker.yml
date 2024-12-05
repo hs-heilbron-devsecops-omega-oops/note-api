@@ -7,7 +7,7 @@ on:
 
 permissions:
   packages: write
-  contents: read
+  contents: write
 
 
 jobs:
@@ -65,21 +65,11 @@ jobs:
         run: |
           docker push ${{ env.IMAGE_NAME }}
 
-      - name: Save image name artifact
-        run: echo "${{ env.IMAGE_NAME }}" > image-name.txt
-
       - name: Verify Image Name File
         run: |
+            echo "Verifying image-name.txt"
             ls -l image-name.txt
             cat image-name.txt
 
-      - name: Upload Image Name File
-        uses: actions/upload-artifact@v3
-        with:
-              name: image-name
-              path: image-name.txt
-
-      - name: Log artifact upload
-        run: |
-          ls -l image-name.txt
-          echo "Artifact image-name.txt exists."
+      - name: Save Image Name to Workspace
+        run: mv image-name.txt $GITHUB_WORKSPACE/

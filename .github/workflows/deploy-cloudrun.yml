@@ -23,26 +23,11 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Debug Workflow Context
+      - name: Read Image Name from Workspace
         run: |
-            echo "Triggered by workflow: ${{ github.event.workflow_run.workflow_id }}"
-            echo "Run number: ${{ github.event.workflow_run.run_number }}"
-            echo "Event: ${{ toJSON(github.event) }}"
-
-      - name: List Available Artifacts
-        run: echo "Artifacts are only visible within the same workflow run."
-
-
-      - name: Download image name artifact
-        uses: actions/download-artifact@v3
-        with:
-            name: image-name
-
-      - name: Read image name
-        run: |
-                IMAGE_NAME=$(cat image-name.txt)
-                echo "IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_ENV    
-
+            IMAGE_NAME=$(cat $GITHUB_WORKSPACE/image-name.txt)
+            echo "Using Image Name: $IMAGE_NAME"
+            echo "IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_ENV
 
 
       - name: Load configuration
@@ -83,7 +68,7 @@ jobs:
         uses: google-github-actions/deploy-cloudrun@v1
         with:
           service: ${{ env.service_name }}
-          image: ${{ env.artifact_registry }}/hs-heilbronn-devsecops/cloud-run-source-deploy/note-api-hs-heilbron-devsecops-omega-oops:${{ github.sha }}
+          image: ${{ env.IMAGE_NAME }}
           region: ${{ env.region }}
           env_vars: ${{ env.env_vars }}
           ingress: all
