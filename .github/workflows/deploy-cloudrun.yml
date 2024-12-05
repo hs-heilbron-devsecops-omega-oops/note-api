@@ -41,6 +41,10 @@ jobs:
           repository: ${{ github.repository }}
           run-id: ${{ github.event.workflow_run.id }}
 
+      - name: Authenticate with GitHub Container Registry
+        run: |
+          echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
       - name: Read Image Name
         run: |
           IMAGE_NAME=$(cat image-name.txt)
@@ -69,10 +73,6 @@ jobs:
 
       - name: Log GCP authentication success
         run: echo "Successfully authenticated with GCP."
-
-      - name: Authenticate with GitHub Container Registry
-        run: |
-          echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
       - name: Deploy to Google Cloud Run
         uses: google-github-actions/deploy-cloudrun@v1
