@@ -30,9 +30,6 @@ jobs:
             echo "Triggered workflow run number: ${{ github.event.workflow_run.run_number }}"
             echo "Triggered workflow URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }}"
 
-      - name: Wait for Artifact
-        run: sleep 10
-
       - name: Download Image Name Artifact
         uses: actions/download-artifact@v4
         with:
