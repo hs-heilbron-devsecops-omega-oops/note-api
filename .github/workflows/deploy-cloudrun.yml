@@ -57,8 +57,7 @@ jobs:
           echo "region=$(jq -r '.region' config.json)" >> $GITHUB_ENV
           echo "artifact_registry=$(jq -r '.artifact_registry' config.json)" >> $GITHUB_ENV
           echo "env_vars=$(jq -r '.env_vars | tojson' config.json)" >> $GITHUB_ENV
-
-
+      
 
       - name: Authenticate with GCP
         uses: google-github-actions/auth@v1
@@ -67,41 +66,18 @@ jobs:
           service_account: ${{ secrets.SERVICE_ACCOUNT }}
           create_credentials_file: true
           export_environment_variables: true
-          access_token_lifetime: 3600s
-          access_token_scopes: https://www.googleapis.com/auth/cloud-platform
 
       - name: Log GCP authentication success
         run: echo "Successfully authenticated with GCP."
 
-      - name: Authenticate with Google Cloud
-        uses: google-github-actions/auth@v1
-        with:
-            workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
-            service_account: ${{ secrets.SERVICE_ACCOUNT }}
-
-      - name: Authorize Cloud Run to Access GitHub Container Registry
-        run: |
-                gcloud auth configure-docker ghcr.io
-                gcloud iam service-accounts add-iam-policy-binding \
-                  ${{ secrets.SERVICE_ACCOUNT }} \
-                  --role roles/run.invoker \
-                  --member="allAuthenticatedUsers"
-
       - name: Deploy to Google Cloud Run
         run: |
-                gcloud run deploy note-api-hs-heilbron-devsecops-omega-oops \
-                  --quiet \
-                  --image ${{ env.IMAGE_NAME }} \
-                  --update-env-vars "BACKEND=memory" \
-                  --update-labels managed-by=github-actions,commit-sha=${{ github.sha }} \
-                  --platform managed \
-                  --region europe-west3
-
-      - name: Log Deployment Success
-        run: echo "Successfully deployed to Google Cloud Run."
-
-      - name: Log Cloud Run deployment success
-        run: echo "Successfully deployed to Google Cloud Run."
+          gcloud run deploy ${{ env.service_name }} \
+            --quiet \
+            --image ${{ env.IMAGE_NAME }} \
+            --update-env-vars "$(echo ${{ env.env_vars }} | jq -r 'to_entries|map("\(.key)=\(.value|tostring)")|join(",")')" \
+            --platform managed \
+            --region ${{ env.region }}
 
       - name: Get Cloud Run service details
         run: gcloud run services describe ${{ env.service_name }} --region ${{ env.region }}
@@ -109,5 +85,11 @@ jobs:
       - name: Log Deployment Details
         run: |
           echo "Deployed image: ${{ env.IMAGE_NAME }}" > deployment.log
+          echo "Service name: ${{ env.service_name }}" >> deployment.log
+          echo "Region: ${{ env.region }}" >> deployment.log
 
-
+      - name: Upload Deployment Log
+        uses: actions/upload-artifact@v3
+        with:
+          name: deployment-log
+          path: deployment.log
