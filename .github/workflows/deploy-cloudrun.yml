@@ -98,8 +98,8 @@ jobs:
                   --platform managed \
                   --region europe-west3
 
-            - name: Log Deployment Success
-              run: echo "Successfully deployed to Google Cloud Run."
+      - name: Log Deployment Success
+        run: echo "Successfully deployed to Google Cloud Run."
 
       - name: Log Cloud Run deployment success
         run: echo "Successfully deployed to Google Cloud Run."
