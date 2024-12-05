@@ -74,14 +74,32 @@ jobs:
       - name: Log GCP authentication success
         run: echo "Successfully authenticated with GCP."
 
-      - name: Deploy to Google Cloud Run
-        uses: google-github-actions/deploy-cloudrun@v1
+      - name: Authenticate with Google Cloud
+        uses: google-github-actions/auth@v1
         with:
-          service: ${{ env.service_name }}
-          image: ${{ env.IMAGE_NAME }}
-          region: ${{ env.region }}
-          env_vars: ${{ env.env_vars }}
-          no_traffic: false
+            workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
+            service_account: ${{ secrets.SERVICE_ACCOUNT }}
+
+      - name: Authorize Cloud Run to Access GitHub Container Registry
+        run: |
+                gcloud auth configure-docker ghcr.io
+                gcloud iam service-accounts add-iam-policy-binding \
+                  ${{ secrets.SERVICE_ACCOUNT }} \
+                  --role roles/run.invoker \
+                  --member="allAuthenticatedUsers"
+
+      - name: Deploy to Google Cloud Run
+        run: |
+                gcloud run deploy note-api-hs-heilbron-devsecops-omega-oops \
+                  --quiet \
+                  --image ${{ env.IMAGE_NAME }} \
+                  --update-env-vars "BACKEND=memory" \
+                  --update-labels managed-by=github-actions,commit-sha=${{ github.sha }} \
+                  --platform managed \
+                  --region europe-west3
+
+            - name: Log Deployment Success
+              run: echo "Successfully deployed to Google Cloud Run."
 
       - name: Log Cloud Run deployment success
         run: echo "Successfully deployed to Google Cloud Run."
