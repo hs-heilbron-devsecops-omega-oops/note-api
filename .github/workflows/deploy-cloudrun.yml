@@ -23,17 +23,15 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Debug artifact download
-        uses: actions/download-artifact@v3
-        with:
-          name: image-name
-        continue-on-error: true
-
-      - name: Debug artifact contents
+      - name: Debug Workflow Context
         run: |
-          echo "Contents of image-name.txt:"
-          cat image-name.txt
-          ls -l
+            echo "Triggered by workflow: ${{ github.event.workflow_run.workflow_id }}"
+            echo "Run number: ${{ github.event.workflow_run.run_number }}"
+            echo "Event: ${{ toJSON(github.event) }}"
+
+      - name: List Available Artifacts
+        run: echo "Artifacts are only visible within the same workflow run."
+
 
       - name: Download image name artifact
         uses: actions/download-artifact@v3

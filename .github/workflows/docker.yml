@@ -68,11 +68,16 @@ jobs:
       - name: Save image name artifact
         run: echo "${{ env.IMAGE_NAME }}" > image-name.txt
 
-      - name: Upload artifact
+      - name: Verify Image Name File
+        run: |
+            ls -l image-name.txt
+            cat image-name.txt
+
+      - name: Upload Image Name File
         uses: actions/upload-artifact@v3
         with:
-          name: image-name
-          path: image-name.txt
+              name: image-name
+              path: image-name.txt
 
       - name: Log artifact upload
         run: |
