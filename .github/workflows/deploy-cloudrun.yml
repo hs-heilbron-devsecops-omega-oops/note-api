@@ -11,6 +11,7 @@ permissions:
   contents: read
   packages: read
 
+
 jobs:
   deploy:
     name: Deploy to Google Cloud Run
