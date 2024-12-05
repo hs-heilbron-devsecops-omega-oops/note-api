@@ -71,6 +71,14 @@ jobs:
             echo "Verifying image-name.txt"
             ls -l image-name.txt
             cat image-name.txt
+      - name: Save Image Name to File
+        run: echo "${{ env.IMAGE_NAME }}" > image-name.txt
+
+      - name: Upload Image Name Artifact
+        uses: actions/upload-artifact@v3
+        with:
+             name: image-name
+             path: image-name.txt
 
       - name: Log Build Workflow Context
         run: |

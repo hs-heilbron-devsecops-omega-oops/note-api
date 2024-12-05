@@ -30,12 +30,17 @@ jobs:
             echo "Triggered workflow run number: ${{ github.event.workflow_run.run_number }}"
             echo "Triggered workflow URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }}"
 
-      - name: Read Image Name from Workspace
-        run: |
-            IMAGE_NAME=$(cat $GITHUB_WORKSPACE/image-name.txt)
-            echo "Using Image Name: $IMAGE_NAME"
-            echo "IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_ENV
+      - name: Download Image Name Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: image-name
 
+      - name: Read Image Name
+        run: |
+          IMAGE_NAME=$(cat image-name.txt)
+          echo "Using Image Name: $IMAGE_NAME"
+          echo "IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_ENV
+      
 
       - name: Load configuration
         run: |
