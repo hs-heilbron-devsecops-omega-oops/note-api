@@ -78,7 +78,7 @@ jobs:
 
     
           DATE=$(date +'%Y-%m-%d')
-          TAGGED_IMAGE="europe-west3-docker.pkg.dev/hs-heilbronn-devsecops/cloud-run-source-deploy/note-api-hs-heilbron-devsecops-omega-oops:${DATE}-${BUILD_NUMBER}"
+          TAGGED_IMAGE="${{ env.artifact_registry }}/hs-heilbronn-devsecops/cloud-run-source-deploy/note-api-hs-heilbron-devsecops-omega-oops:${DATE}-${BUILD_NUMBER}"
 
           echo "TAGGED_IMAGE=$TAGGED_IMAGE" >> $GITHUB_ENV
           echo "BUILD_NUMBER=$BUILD_NUMBER" >> $GITHUB_ENV
@@ -119,6 +119,14 @@ jobs:
 
       - name: Log Docker login success
         run: echo "Successfully logged into GitHub Container Registry."
+
+      - name: Authenticate with Google Artifact Registry
+        run: |
+              gcloud auth configure-docker europe-west3-docker.pkg.dev --quiet
+
+      - name: Configure Docker to use Artifact Registry
+        run: gcloud auth configure-docker ${{ env.artifact_registry }}
+
 
       - name: Push Image to Google Artifact Registry
         run: |
