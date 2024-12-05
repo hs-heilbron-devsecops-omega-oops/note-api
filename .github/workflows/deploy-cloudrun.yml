@@ -59,6 +59,7 @@ jobs:
           echo "env_vars=$(jq -r '.env_vars | tojson' config.json)" >> $GITHUB_ENV
 
 
+
       - name: Authenticate with GCP
         uses: google-github-actions/auth@v1
         with:
@@ -109,8 +110,4 @@ jobs:
         run: |
           echo "Deployed image: ${{ env.IMAGE_NAME }}" > deployment.log
 
-      - name: Upload Deployment Log
-        uses: actions/upload-artifact@v3
-        with:
-          name: deployment-log
-          path: deployment.log
+
