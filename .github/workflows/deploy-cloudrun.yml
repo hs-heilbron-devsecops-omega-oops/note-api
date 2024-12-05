@@ -38,10 +38,10 @@ jobs:
           repository: ${{ github.repository }}
           run-id: ${{ github.event.workflow_run.id }}
 
-      - name: Download Built Number Artifact
+      - name: Download Build Number Artifact
         uses: actions/download-artifact@v4
         with:
-          name: built-number
+          name: build-number
           github-token: ${{ secrets.GITHUB_TOKEN }}
           repository: ${{ github.repository }}
           run-id: ${{ github.event.workflow_run.id }}
@@ -56,11 +56,11 @@ jobs:
           echo "Using Image Name: $IMAGE_NAME"
           echo "IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_ENV
 
-      - name: Read Built Number
+      - name: Read Build Number
         run: |
-          BUILT_NUMBER=$(cat built-number.txt)
-          echo "Using Image Name: $BUILT_NUMBER"
-          echo "BUILT_NUMBER=$BUILT_NUMBER" >> $GITHUB_ENV   
+          BUILD_NUMBER=$(cat build-number.txt)
+          echo "Using Image Name: $BUILD_NUMBER"
+          echo "BUILD_NUMBER=$BUILD_NUMBER" >> $GITHUB_ENV   
       
 
       - name: Load configuration
