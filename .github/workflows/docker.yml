@@ -58,12 +58,14 @@ jobs:
           TIMESTAMP=$(date +"%Y-%m-%d")
           RUN_NUMBER=$(( $GITHUB_RUN_NUMBER % 1000 ))
           IMAGE_NAME="ghcr.io/${{ github.repository }}:$TIMESTAMP-$RUN_NUMBER"
+          BUILD_NUMBER=$TIMESTAMP-$RUN_NUMBER
           docker build -t $IMAGE_NAME .
           echo "IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_ENV
+          echo "BUILD_NUMBER=$BUILD_NUMBER" >> $GITHUB_ENV
 
       - name: Create Combined Artifact
         run: |
-          echo -e "$IMAGE_NAME\n$TIMESTAMP-$RUN_NUMBER" > image-and-build-name.txt
+          echo -e "$IMAGE_NAME\n$BUILD_NUMBER" > image-and-build-name.txt
           
           echo "Combined Artifact Content:"
           cat image-and-build-name.txt
