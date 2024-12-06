@@ -19,6 +19,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Initialize Log File
+        run: echo "Deployment Workflow Logs - $(date)" > workflow.log
+
+      - name: Log Start of Workflow
+        run: echo "Starting Deployment Workflow at $(date)" >> workflow.log
+
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
@@ -26,10 +32,16 @@ jobs:
 
       - name: Debug Workflow Run Context
         run: |
-          echo "Triggered by workflow: ${{ github.event.workflow_run.name }}"
-          echo "Triggered workflow ID: ${{ github.event.workflow_run.id }}"
-          echo "Triggered workflow run number: ${{ github.event.workflow_run.run_number }}"
-          echo "Triggered workflow URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }}"
+          echo "Triggered by workflow: ${{ github.event.workflow_run.name }}" >> workflow.log
+          echo "Triggered workflow ID: ${{ github.event.workflow_run.id }}" >> workflow.log
+          echo "Triggered workflow run number: ${{ github.event.workflow_run.run_number }}" >> workflow.log
+          echo "Triggered workflow URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }}" >> workflow.log
+
+      - name: Log Repository Information
+        run: |
+          echo "Repository: ${{ github.repository }}" >> workflow.log
+          echo "Branch: ${{ github.ref }}" >> workflow.log
+          echo "Commit SHA: ${{ github.sha }}" >> workflow.log
 
       - name: Download Image Name Artifact
         uses: actions/download-artifact@v4
@@ -50,12 +62,16 @@ jobs:
       - name: Authenticate with GitHub Container Registry
         run: |
           echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          echo "Successfully logged into GitHub Container Registry." >> workflow.log
 
       - name: Read Image Name
         run: |
           IMAGE_NAME=$(cat image-name.txt)
-          echo "Using Image Name: $IMAGE_NAME"
+          echo "Using Image Name: $IMAGE_NAME" >> workflow.log
           echo "IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_ENV
+
+      - name: Log Configuration Loading Start
+        run: echo "Loading configuration at $(date)" >> workflow.log
 
       - name: Read Build Number
         run: |
@@ -71,6 +87,7 @@ jobs:
           echo "region=$(jq -r '.region' config.json)" >> $GITHUB_ENV
           echo "env_vars=$(jq -r '.env_vars | tojson' config.json)" >> $GITHUB_ENV
           echo "artifact_registry=$(jq -r '.artifact_registry' config.json)" >> $GITHUB_ENV
+          echo "Configuration loaded successfully." >> workflow.log
 
 
       - name: Pull Source Image if Not Available
@@ -79,10 +96,10 @@ jobs:
 
           
           if ! docker images | grep -q "$(echo $SOURCE_IMAGE | cut -d':' -f2)"; then
-            echo "Source image not found locally. Pulling image: $SOURCE_IMAGE"
+            echo "Source image not found locally. Pulling image: $SOURCE_IMAGE" >> workflow.log
             docker pull $SOURCE_IMAGE
           else
-            echo "Source image found locally: $SOURCE_IMAGE"
+            echo "Source image found locally: $SOURCE_IMAGE" >> workflow.log
           fi
           
 
@@ -94,7 +111,7 @@ jobs:
 
           echo "TAGGED_IMAGE=$TAGGED_IMAGE" >> $GITHUB_ENV
           echo "BUILD_NUMBER=$BUILD_NUMBER" >> $GITHUB_ENV
-          echo "Generated image tag: $TAGGED_IMAGE"
+          echo "Generated image tag: $TAGGED_IMAGE" >> workflow.log
 
       - name: Authenticate with GCP
         uses: google-github-actions/auth@v1
@@ -109,6 +126,8 @@ jobs:
       - name: Log GCP authentication success
         run: echo "Successfully authenticated with GCP."
 
+      - name: Verify Authentication
+        run: gcloud auth list >> workflow.log
 
       - name: Set up gcloud CLI
         uses: google-github-actions/setup-gcloud@v1
@@ -117,10 +136,6 @@ jobs:
 
       - name: Check gcloud version
         run: gcloud version
-
-      - name: Verify Authentication
-        run: gcloud auth list
-
 
       - name: Log Docker login success
         run: echo "Successfully logged into GitHub Container Registry."
@@ -137,6 +152,7 @@ jobs:
         run: |
           docker tag ${{ env.IMAGE_NAME }} ${{ env.TAGGED_IMAGE }}
           docker push ${{ env.TAGGED_IMAGE }}        
+          echo "Image pushed to Google Artifact Registry: ${{ env.TAGGED_IMAGE }}" >> workflow.log          
 
       - name: Deploy to Google Cloud Run
         uses: google-github-actions/deploy-cloudrun@v1
@@ -149,10 +165,13 @@ jobs:
             no_traffic: false
 
       - name: Get Cloud Run service details
-        run: gcloud run services describe ${{ env.service_name }} --region ${{ env.region }}
+        run: gcloud run services describe ${{ env.service_name }} --region ${{ env.region }} >> workflow.log
 
-      - name: Log Deployment Details
-        run: |
-          echo "Deployed image: ${{ env.TAGGED_IMAGE }}" > deployment.log
-          echo "Service name: ${{ env.service_name }}" >> deployment.log
-          echo "Region: ${{ env.region }}" >> deployment.log
+      - name: Log End of Workflow
+        run: echo "Deployment completed successfully at $(date)" >> workflow.log
+
+      - name: Upload Logs as Artifact
+        uses: actions/upload-artifact@v3
+        with:
+            name: workflow-logs
+            path: workflow.log
