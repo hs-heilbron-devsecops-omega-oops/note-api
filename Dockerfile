@@ -8,7 +8,7 @@ WORKDIR /note_api
 
 # Step 3: Copy only the requirements files first for better caching
 COPY requirements.txt requirements-dev.txt ./
-
+RUN python -m pip install --upgrade pip
 # Step 4: Install production dependencies first
 RUN pip install --no-cache-dir -r requirements.txt
 
