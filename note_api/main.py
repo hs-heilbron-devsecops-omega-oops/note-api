@@ -14,8 +14,8 @@ from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
 from pythonjsonlogger import jsonlogger
 
-from .backends import Backend, RedisBackend, MemoryBackend, GCSBackend
-from .model import Note, CreateNoteRequest
+from .backends import Backend, RedisBackend, MemoryBackend, GCSBackend  # Custom backends
+from .model import Note, CreateNoteRequest  # Data model definitions
 
 app = FastAPI()
 
@@ -28,7 +28,6 @@ trace.set_tracer_provider(trace_provider)
 FastAPIInstrumentor.instrument_app(app)
 LoggingInstrumentor().instrument()
 
-# Configure structured logging
 logHandler = logging.StreamHandler()
 formatter = jsonlogger.JsonFormatter(
     "%(asctime)s %(levelname)s %(message)s %(otelTraceID)s %(otelSpanID)s %(otelTraceSampled)s",
@@ -48,7 +47,6 @@ logger = logging.getLogger("note-api")
 my_backend: Optional[Backend] = None
 
 def get_backend() -> Backend:
-
     global my_backend
     if my_backend is None:
         backend_type = getenv("BACKEND", "memory")
@@ -63,39 +61,38 @@ def get_backend() -> Backend:
 
 @app.get("/")
 def redirect_to_notes() -> RedirectResponse:
-
     return RedirectResponse(url="/notes")
 
 @app.get("/notes")
 def get_notes(backend: Backend = Depends(get_backend)) -> List[Note]:
-
     with trace.get_tracer(__name__).start_as_current_span("get_notes") as span:
         keys = backend.keys()
         notes = [backend.get(key) for key in keys]
         span.set_attribute("notes.count", len(notes))
+        span.add_event("Fetched all notes", {"count": len(notes)})
         return notes
 
 @app.get("/notes/{note_id}")
 def get_note(note_id: str, backend: Backend = Depends(get_backend)) -> Note:
-
     with trace.get_tracer(__name__).start_as_current_span("get_note") as span:
         span.set_attribute("note.id", note_id)
+        span.add_event("Fetching note", {"note.id": note_id})
         return backend.get(note_id)
 
 @app.put("/notes/{note_id}")
 def update_note(note_id: str, request: CreateNoteRequest, backend: Backend = Depends(get_backend)) -> None:
-
     with trace.get_tracer(__name__).start_as_current_span("update_note") as span:
         span.set_attribute("note.id", note_id)
         backend.set(note_id, request)
+        span.add_event("Updated note", {"note.id": note_id})
 
 @app.post("/notes")
 def create_note(request: CreateNoteRequest, backend: Backend = Depends(get_backend)) -> str:
-
     with trace.get_tracer(__name__).start_as_current_span("create_note_span") as span:
         note_id = str(uuid4())
         backend.set(note_id, request)
         span.set_attribute("note.id", note_id)
+        span.add_event("Note created", {"note.id": note_id})
         logger.info("Note created", extra={"note_id": note_id})
         return note_id
 
