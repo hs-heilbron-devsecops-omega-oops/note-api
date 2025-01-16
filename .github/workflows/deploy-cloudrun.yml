@@ -165,7 +165,7 @@ jobs:
         run: echo "Deployment completed successfully at $(date)" >> workflow.log
 
       - name: Upload Logs as Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
             name: workflow-logs
             path: workflow.log
