@@ -3,7 +3,7 @@ from typing import List, Optional
 from os import getenv
 import logging
 
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException, Request
 from starlette.responses import RedirectResponse
 from opentelemetry import trace
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
@@ -14,8 +14,8 @@ from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
 from pythonjsonlogger import jsonlogger
 
-from .backends import Backend, RedisBackend, MemoryBackend, GCSBackend
-from .model import Note, CreateNoteRequest
+from .backends import Backend, RedisBackend, MemoryBackend, GCSBackend  # Custom backends
+from .model import Note, CreateNoteRequest  # Data model definitions
 
 app = FastAPI()
 
@@ -24,7 +24,6 @@ trace_provider = TracerProvider(resource=resource)
 trace_exporter = OTLPSpanExporter(endpoint=getenv("OTLP_ENDPOINT", "https://trace.googleapis.com"))
 trace_provider.add_span_processor(BatchSpanProcessor(trace_exporter))
 trace.set_tracer_provider(trace_provider)
-
 
 FastAPIInstrumentor.instrument_app(app)
 LoggingInstrumentor().instrument()
@@ -59,6 +58,15 @@ def get_backend() -> Backend:
         else:
             my_backend = MemoryBackend()
     return my_backend
+
+@app.middleware("http")
+async def log_exceptions(request: Request, call_next):
+    try:
+        response = await call_next(request)
+    except Exception as exc:
+        logger.error(f"Unhandled exception: {exc}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+    return response
 
 @app.get("/")
 def redirect_to_notes() -> RedirectResponse:
